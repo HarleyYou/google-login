@@ -28,8 +28,8 @@ npm run dev
 ① / (輸入 Email)  →  ② /password (輸入密碼)  →  ③ /home (登入成功)
 ```
 
-- `/home` 進入時自動呼叫 `/api/auth/me` 驗證 cookie，無效則跳回 `/`
-- 所有 API 呼叫包含 try-catch，網路錯誤時顯示友善提示，不會卡在 loading
+- `/home` 進入時自動呼叫 `/api/auth/me` 驗證 session，無效則跳回 `/`
+- 所有 API 呼叫包含 try-catch，網路錯誤時顯示友善提示
 
 ## 專案結構
 
@@ -45,6 +45,14 @@ src/
 └── lib/
     └── api.ts             # 共用 fetch 工具（API_URL 常數、統一錯誤處理）
 ```
+
+## 安全機制
+
+| 項目 | 實作 |
+|---|---|
+| 安全 Headers | X-Frame-Options、CSP、X-Content-Type-Options、Referrer-Policy（next.config.ts）|
+| API 呼叫 | `credentials: include`，統一錯誤處理 |
+| Docker | non-root user（appuser）執行 |
 
 ## Docker
 
@@ -69,5 +77,5 @@ env:
 ## 已知限制（學習 / Demo 用途）
 
 - `NEXT_PUBLIC_API_URL` build-time baked，正式多環境部署需為每個環境各自 build
-- 無 JWT，session 以 HttpOnly cookie 管理
 - 無資料庫，用戶資料存在後端記憶體
+- CSP 中 `connect-src` 僅允許 `localhost:8080`，正式環境需更新
