@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: google-login-frontend-service
+  namespace: default
+spec:
+  selector:
+    app: google-login-frontend
+  ports:
+    - port: 80
+      targetPort: 3000
+  type: ClusterIP

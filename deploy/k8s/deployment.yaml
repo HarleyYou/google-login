@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: google-login-frontend
+  namespace: default
+  labels:
+    app: google-login-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: google-login-frontend
+  template:
+    metadata:
+      labels:
+        app: google-login-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: registry.gitlab.com/YOUR_GROUP/google-login:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: "production"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
