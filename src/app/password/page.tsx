@@ -3,6 +3,7 @@
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import GoogleLogo from "../GoogleLogo";
+import { apiFetch } from "@/lib/api";
 
 function PasswordForm() {
   const router = useRouter();
@@ -17,17 +18,18 @@ function PasswordForm() {
     if (!password.trim()) { setError("請輸入密碼"); return; }
     setLoading(true);
     setError("");
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
-    const res = await fetch(`${apiUrl}/api/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-      credentials: "include",
-    });
-    const data = await res.json();
-    setLoading(false);
-    if (!res.ok) { setError(data.error); return; }
-    router.push(`/home?email=${encodeURIComponent(email)}`);
+    try {
+      const { res, data } = await apiFetch("/api/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
+      if (!res.ok) { setError(data.error ?? "發生錯誤，請稍後再試"); return; }
+      router.push(`/home`);
+    } catch {
+      setError("無法連線到伺服器，請稍後再試");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

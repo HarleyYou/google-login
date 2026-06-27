@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import GoogleLogo from "./GoogleLogo";
+import { apiFetch } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -14,17 +15,18 @@ export default function LoginPage() {
     if (!email.trim()) { setError("請輸入電子郵件地址或電話號碼"); return; }
     setLoading(true);
     setError("");
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
-    const res = await fetch(`${apiUrl}/api/auth/check-email`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-      credentials: "include",
-    });
-    const data = await res.json();
-    setLoading(false);
-    if (!res.ok) { setError(data.error); return; }
-    router.push(`/password?email=${encodeURIComponent(email)}`);
+    try {
+      const { res, data } = await apiFetch("/api/auth/check-email", {
+        method: "POST",
+        body: JSON.stringify({ email }),
+      });
+      if (!res.ok) { setError(data.error ?? "發生錯誤，請稍後再試"); return; }
+      router.push(`/password?email=${encodeURIComponent(email)}`);
+    } catch {
+      setError("無法連線到伺服器，請稍後再試");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

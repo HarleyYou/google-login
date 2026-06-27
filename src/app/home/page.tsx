@@ -2,27 +2,33 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { apiFetch } from "@/lib/api";
 
 export default function HomePage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
-
   useEffect(() => {
-    fetch(`${apiUrl}/api/auth/me`, { credentials: "include" })
-      .then((res) => {
-        if (!res.ok) { router.replace("/"); return null; }
-        return res.json();
-      })
-      .then((data) => { if (data?.email) setEmail(data.email); });
-  }, [router, apiUrl]);
+    async function checkAuth() {
+      try {
+        const { res, data } = await apiFetch("/api/auth/me");
+        if (!res.ok) { router.replace("/"); return; }
+        setEmail(data.email);
+      } catch {
+        router.replace("/");
+      }
+    }
+    checkAuth();
+  }, [router]);
 
   const name = email.split("@")[0];
 
   async function handleLogout() {
-    await fetch(`${apiUrl}/api/auth/logout`, { method: "POST", credentials: "include" });
-    router.push("/");
+    try {
+      await apiFetch("/api/auth/logout", { method: "POST" });
+    } finally {
+      router.push("/");
+    }
   }
 
   if (!email) return null;
