@@ -14,7 +14,8 @@ export default function LoginPage() {
     if (!email.trim()) { setError("請輸入電子郵件地址或電話號碼"); return; }
     setLoading(true);
     setError("");
-    const res = await fetch("http://localhost:8080/api/auth/check-email", {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+    const res = await fetch(`${apiUrl}/api/auth/check-email`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email }),

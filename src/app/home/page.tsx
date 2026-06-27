@@ -7,19 +7,21 @@ export default function HomePage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
 
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+
   useEffect(() => {
-    fetch("http://localhost:8080/api/auth/me", { credentials: "include" })
+    fetch(`${apiUrl}/api/auth/me`, { credentials: "include" })
       .then((res) => {
         if (!res.ok) { router.replace("/"); return null; }
         return res.json();
       })
       .then((data) => { if (data?.email) setEmail(data.email); });
-  }, [router]);
+  }, [router, apiUrl]);
 
   const name = email.split("@")[0];
 
   async function handleLogout() {
-    await fetch("http://localhost:8080/api/auth/logout", { method: "POST", credentials: "include" });
+    await fetch(`${apiUrl}/api/auth/logout`, { method: "POST", credentials: "include" });
     router.push("/");
   }
 
