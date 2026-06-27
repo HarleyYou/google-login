@@ -34,16 +34,21 @@ npm run dev
 ## 專案結構
 
 ```
-src/
-├── app/
-│   ├── page.tsx           # ① 輸入 Email 頁
-│   ├── password/
-│   │   └── page.tsx       # ② 輸入密碼頁
-│   ├── home/
-│   │   └── page.tsx       # ③ 登入成功頁
-│   └── GoogleLogo.tsx
-└── lib/
-    └── api.ts             # 共用 fetch 工具（API_URL 常數、統一錯誤處理）
+├── src/
+│   ├── app/
+│   │   ├── page.tsx           # ① 輸入 Email 頁
+│   │   ├── password/
+│   │   │   └── page.tsx       # ② 輸入密碼頁
+│   │   ├── home/
+│   │   │   └── page.tsx       # ③ 登入成功頁
+│   │   └── GoogleLogo.tsx
+│   └── lib/
+│       └── api.ts             # 共用 fetch 工具（API_URL 常數、統一錯誤處理）
+├── deploy/
+│   └── k8s/
+│       ├── deployment.yaml    # k8s Deployment（2 replicas、probe）
+│       └── service.yaml       # k8s ClusterIP Service
+└── .gitlab-ci.yml             # GitLab CI/CD Pipeline
 ```
 
 ## 安全機制
@@ -73,6 +78,27 @@ env:
   - name: NEXT_PUBLIC_API_URL
     value: "http://google-login-api-service:8080"
 ```
+
+## GitLab CI/CD
+
+### Pipeline 流程
+```
+push to main
+    ↓
+[build] docker build → push to GitLab Registry
+    ↓
+[deploy] kubectl apply → kubectl set image → rollout status
+```
+
+### 需設定的 CI Variables
+
+| 變數 | 說明 |
+|---|---|
+| `KUBE_CONFIG` | base64 編碼的 kubeconfig |
+| `KUBE_NAMESPACE` | 部署的 k8s namespace |
+| `NEXT_PUBLIC_API_URL` | API 的完整 URL（build 時注入）|
+
+> 部署前請將 `deploy/k8s/deployment.yaml` 中的 `registry.gitlab.com/YOUR_GROUP/...` 換成實際路徑。
 
 ## 已知限制（學習 / Demo 用途）
 
