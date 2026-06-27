@@ -28,6 +28,24 @@ npm run dev
 ① / (輸入 Email)  →  ② /password (輸入密碼)  →  ③ /home (登入成功)
 ```
 
+- `/home` 進入時自動呼叫 `/api/auth/me` 驗證 cookie，無效則跳回 `/`
+- 所有 API 呼叫包含 try-catch，網路錯誤時顯示友善提示，不會卡在 loading
+
+## 專案結構
+
+```
+src/
+├── app/
+│   ├── page.tsx           # ① 輸入 Email 頁
+│   ├── password/
+│   │   └── page.tsx       # ② 輸入密碼頁
+│   ├── home/
+│   │   └── page.tsx       # ③ 登入成功頁
+│   └── GoogleLogo.tsx
+└── lib/
+    └── api.ts             # 共用 fetch 工具（API_URL 常數、統一錯誤處理）
+```
+
 ## Docker
 
 ```bash
@@ -38,13 +56,18 @@ docker build \
 docker run -p 3000:3000 google-login-frontend
 ```
 
+> ⚠️ `NEXT_PUBLIC_API_URL` 在 **build 時**注入 JS bundle，多環境需各自 build image。
+
 ## Kubernetes 部署
 
 ```yaml
-# 在 Deployment 的 env 設定 API URL
 env:
   - name: NEXT_PUBLIC_API_URL
     value: "http://google-login-api-service:8080"
 ```
 
-> `NEXT_PUBLIC_API_URL` 在 build 時注入，部署前請確認此值正確。
+## 已知限制（學習 / Demo 用途）
+
+- `NEXT_PUBLIC_API_URL` build-time baked，正式多環境部署需為每個環境各自 build
+- 無 JWT，session 以 HttpOnly cookie 管理
+- 無資料庫，用戶資料存在後端記憶體
