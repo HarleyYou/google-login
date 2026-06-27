@@ -1,17 +1,32 @@
 "use client";
 
-import { Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
-function HomeContent() {
-  const params = useSearchParams();
+export default function HomePage() {
   const router = useRouter();
-  const email = params.get("email") ?? "";
+  const [email, setEmail] = useState("");
+
+  useEffect(() => {
+    fetch("http://localhost:8080/api/auth/me", { credentials: "include" })
+      .then((res) => {
+        if (!res.ok) { router.replace("/"); return null; }
+        return res.json();
+      })
+      .then((data) => { if (data?.email) setEmail(data.email); });
+  }, [router]);
+
   const name = email.split("@")[0];
+
+  async function handleLogout() {
+    await fetch("http://localhost:8080/api/auth/logout", { method: "POST", credentials: "include" });
+    router.push("/");
+  }
+
+  if (!email) return null;
 
   return (
     <div style={styles.page}>
-      {/* Header */}
       <header style={styles.header}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <svg width="40" height="14" viewBox="0 0 75 24" xmlns="http://www.w3.org/2000/svg">
@@ -28,29 +43,16 @@ function HomeContent() {
         </div>
       </header>
 
-      {/* Main */}
       <main style={styles.main}>
         <div style={styles.card}>
           <div style={styles.bigAvatar}>{name[0]?.toUpperCase()}</div>
-          <h2 style={{ fontSize: 24, fontWeight: 400, margin: "16px 0 4px" }}>
-            您好，{name}！
-          </h2>
+          <h2 style={{ fontSize: 24, fontWeight: 400, margin: "16px 0 4px" }}>您好，{name}！</h2>
           <p style={{ fontSize: 16, color: "#5f6368", margin: "0 0 24px" }}>{email}</p>
           <div style={styles.infoBadge}>✅ 已成功登入</div>
-          <button onClick={async () => { await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "logout" }) }); router.push("/"); }} style={styles.logoutBtn}>
-            登出
-          </button>
+          <button onClick={handleLogout} style={styles.logoutBtn}>登出</button>
         </div>
       </main>
     </div>
-  );
-}
-
-export default function HomePage() {
-  return (
-    <Suspense>
-      <HomeContent />
-    </Suspense>
   );
 }
 

@@ -17,10 +17,11 @@ function PasswordForm() {
     if (!password.trim()) { setError("請輸入密碼"); return; }
     setLoading(true);
     setError("");
-    const res = await fetch("/api/auth", {
+    const res = await fetch("http://localhost:8080/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "login", email, password }),
+      body: JSON.stringify({ email, password }),
+      credentials: "include",
     });
     const data = await res.json();
     setLoading(false);

@@ -14,10 +14,11 @@ export default function LoginPage() {
     if (!email.trim()) { setError("請輸入電子郵件地址或電話號碼"); return; }
     setLoading(true);
     setError("");
-    const res = await fetch("/api/auth", {
+    const res = await fetch("http://localhost:8080/api/auth/check-email", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "check-email", email }),
+      body: JSON.stringify({ email }),
+      credentials: "include",
     });
     const data = await res.json();
     setLoading(false);
@@ -28,13 +29,15 @@ export default function LoginPage() {
   return (
     <div style={styles.page}>
       <div style={styles.card}>
-        <div style={{ textAlign: "center", marginBottom: 8 }}>
+        {/* 左側：Logo + 標題 */}
+        <div style={styles.left}>
           <GoogleLogo />
+          <h1 style={styles.title}>登入</h1>
+          <p style={styles.subtitle}>使用你的 Google 帳戶</p>
         </div>
-        <h1 style={styles.title}>登入</h1>
-        <p style={styles.subtitle}>使用您的 Google 帳戶</p>
 
-        <div style={{ marginTop: 24 }}>
+        {/* 右側：輸入欄位 + 按鈕 */}
+        <div style={styles.right}>
           <div style={styles.inputWrap}>
             <input
               type="email"
@@ -48,37 +51,46 @@ export default function LoginPage() {
             {error && <p style={styles.error}>{error}</p>}
           </div>
 
-          <p style={{ fontSize: 13, color: "#5f6368", margin: "16px 0" }}>
-            忘記電子郵件地址？
-          </p>
-
-          <p style={{ fontSize: 13, color: "#5f6368", margin: "16px 0 24px" }}>
-            這不是您的電腦嗎？請使用訪客模式以私下登入。
-            <a href="#" style={styles.link}> 瞭解詳情</a>
-          </p>
+          <a href="#" style={styles.forgotLink}>忘記電子郵件地址？</a>
 
           <div style={styles.btnRow}>
-            <a href="#" style={styles.linkBtn}>建立帳戶</a>
+            <a href="#" style={styles.createBtn}>建立帳戶</a>
             <button onClick={handleNext} disabled={loading} style={styles.nextBtn}>
-              {loading ? "..." : "繼續"}
+              {loading ? "..." : "下一步"}
             </button>
           </div>
         </div>
       </div>
+
+      {/* 頁尾 */}
+      <footer style={styles.footer}>
+        <span style={styles.footerLang}>繁體中文 ▾</span>
+        <div style={styles.footerLinks}>
+          <a href="#" style={styles.footerLink}>說明</a>
+          <a href="#" style={styles.footerLink}>隱私權設定</a>
+          <a href="#" style={styles.footerLink}>條款</a>
+        </div>
+      </footer>
     </div>
   );
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  page: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#fff" },
-  card: { width: 400, padding: "48px 40px 36px", border: "1px solid #dadce0", borderRadius: 8 },
-  title: { fontSize: 24, fontWeight: 400, margin: "0 0 8px", textAlign: "center" },
-  subtitle: { fontSize: 16, color: "#5f6368", margin: 0, textAlign: "center" },
-  inputWrap: { position: "relative" },
-  input: { width: "100%", padding: "13px 15px", fontSize: 16, border: "1px solid #dadce0", borderRadius: 4, outline: "none", boxSizing: "border-box", transition: "border-color 0.2s" },
+  page: { minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#EEF2FF" },
+  card: { display: "flex", flexDirection: "row", gap: 48, background: "#fff", borderRadius: 16, padding: "48px 48px 40px", width: 740, boxShadow: "0 2px 10px rgba(0,0,0,0.08)" },
+  left: { flex: "0 0 220px", display: "flex", flexDirection: "column", gap: 8 },
+  title: { fontSize: 32, fontWeight: 400, margin: "16px 0 4px", color: "#1f1f1f" },
+  subtitle: { fontSize: 15, color: "#444746", margin: 0 },
+  right: { flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 16 },
+  inputWrap: { display: "flex", flexDirection: "column" },
+  input: { padding: "14px 16px", fontSize: 16, border: "1px solid #dadce0", borderRadius: 8, outline: "none", boxSizing: "border-box", background: "#fff" },
   error: { fontSize: 12, color: "#d93025", margin: "4px 0 0" },
-  link: { color: "#1a73e8", textDecoration: "none" },
-  btnRow: { display: "flex", justifyContent: "space-between", alignItems: "center" },
-  linkBtn: { fontSize: 14, color: "#1a73e8", textDecoration: "none", fontWeight: 500 },
-  nextBtn: { background: "#1a73e8", color: "#fff", border: "none", borderRadius: 4, padding: "10px 24px", fontSize: 14, fontWeight: 500, cursor: "pointer" },
+  forgotLink: { fontSize: 14, color: "#4338CA", textDecoration: "none", fontWeight: 500 },
+  btnRow: { display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 24 },
+  createBtn: { fontSize: 14, color: "#4338CA", textDecoration: "none", fontWeight: 500 },
+  nextBtn: { background: "#4338CA", color: "#fff", border: "none", borderRadius: 24, padding: "12px 28px", fontSize: 14, fontWeight: 500, cursor: "pointer" },
+  footer: { display: "flex", justifyContent: "space-between", alignItems: "center", width: 740, marginTop: 24, padding: "0 4px" },
+  footerLang: { fontSize: 13, color: "#444746", cursor: "pointer" },
+  footerLinks: { display: "flex", gap: 24 },
+  footerLink: { fontSize: 13, color: "#444746", textDecoration: "none" },
 };
